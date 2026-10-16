@@ -1,0 +1,9 @@
+sources:
+  sample_pangasinan_dictionary.pdf:
+    language_code: pag
+    language_name: Pangasinan
+    document_type: dictionary
+    license_status: unknown
+    license_notes: Not yet checked.
+    origin: Add where this file came from.
+    owner: Add the rights holder.

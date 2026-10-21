@@ -1,0 +1,25 @@
+languages:
+  pag:
+    name: Pangasinan
+    aliases: [Pangasinan, Pangasinense]
+  pam:
+    name: Kapampangan
+    aliases: [Kapampangan, Pampango, Pampangan]
+  bik:
+    name: Bikol
+    aliases: [Bikol, Bicol, Bicolano, Bikolano]
+  ceb:
+    name: Cebuano
+    aliases: [Cebuano, Sinugboanon]
+  hil:
+    name: Hiligaynon
+    aliases: [Hiligaynon, Ilonggo, Ilongo]
+  ilo:
+    name: Ilokano
+    aliases: [Ilokano, Ilocano, Iloko]
+  cbk:
+    name: Chavacano
+    aliases: [Chavacano, Chabacano, Zamboangueño]
+  tgl:
+    name: Tagalog
+    aliases: [Tagalog]

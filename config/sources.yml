@@ -1,9 +1,12 @@
 sources:
-  sample_pangasinan_dictionary.pdf:
-    language_code: pag
-    language_name: Pangasinan
-    document_type: dictionary
-    license_status: unknown
-    license_notes: Not yet checked.
-    origin: Add where this file came from.
-    owner: Add the rights holder.
+  "Bikol Dictionary.pdf": {language_code: bik, language_name: Bikol, document_type: dictionary, license_status: unknown}
+  "Bikol Text.pdf": {language_code: bik, language_name: Bikol, document_type: unclassified, license_status: unknown}
+  "cebuano for beginners.pdf": {language_code: ceb, language_name: Cebuano, document_type: textbook, license_status: unknown}
+  "Hiligaynon Dictionary.pdf": {language_code: hil, language_name: Hiligaynon, document_type: dictionary, license_status: unknown}
+  "Hiligaynon Reference Grammar.pdf": {language_code: hil, language_name: Hiligaynon, document_type: grammar, license_status: unknown}
+  "Ilokano Dictionary.pdf": {language_code: ilo, language_name: Ilokano, document_type: dictionary, license_status: unknown}
+  "Ilokano Lessons.pdf": {language_code: ilo, language_name: Ilokano, document_type: textbook, license_status: unknown}
+  "Kapampangan Dicitonary.pdf": {language_code: pam, language_name: Kapampangan, document_type: dictionary, license_status: unknown}
+  "Kapampangan Grammar Notes.pdf": {language_code: pam, language_name: Kapampangan, document_type: grammar, license_status: unknown}
+  "Pangasinan Dictionary.pdf": {language_code: pag, language_name: Pangasinan, document_type: dictionary, license_status: unknown}
+  "Spoken Pangasinan.pdf": {language_code: pag, language_name: Pangasinan, document_type: textbook, license_status: unknown}

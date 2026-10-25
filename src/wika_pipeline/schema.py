@@ -39,6 +39,9 @@ class DictionaryEntry(BaseModel):
     hyphenation: Optional[str] = None
     canonical_form: Optional[str] = None
     pronunciation_guide: Optional[str] = None
+    original_text: Optional[str] = None
+    parent_headword: Optional[str] = None
+    homograph_number: Optional[int] = Field(default=None, ge=1)
 
     validation_review_status: ValidationStatus = ValidationStatus.EXTRACTED
 

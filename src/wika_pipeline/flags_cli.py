@@ -11,11 +11,14 @@ def count_flags(entries):
 def entries_with_flag(entries, flag):
     return [entry for entry in entries if flag in entry["review_flags"]]
 
+def pages_with_flag(entries, flag):
+    counts = Counter(entry["source_page"] for entry in entries if flag in entry["review_flags"])
+    return sorted(counts.items())
 
 def find_duplicates(entries):
     groups = defaultdict(list)
     for entry in entries:
-        key = (entry["word"], entry["part_of_speech"], entry["meaning"])
+        key = (entry["word"], entry["part_of_speech"], entry["meaning"], entry.get("parent_headword"))
         groups[key].append(entry)
     return [group for group in groups.values() if len(group) > 1]
 
@@ -40,6 +43,7 @@ def main(argv):
             "Usage:\n"
             "  python -m wika_pipeline.flags_cli FILE.jsonl             (count each flag)\n"
             "  python -m wika_pipeline.flags_cli FILE.jsonl FLAG [N]    (list up to N entries, default 40)\n"
+               "  python -m wika_pipeline.flags_cli FILE.jsonl FLAG pages  (list the pages that have the flag)\n"
             "  python -m wika_pipeline.flags_cli FILE.jsonl duplicates"
         )
     entries = load_jsonl(argv[0])
@@ -57,6 +61,12 @@ def main(argv):
             for entry in group:
                 print(format_line(entry))
             print()
+        return
+    if len(argv) == 3 and argv[2] == "pages":
+        pages = pages_with_flag(entries, what)
+        print(f"{len(pages)} pages have entries with the flag '{what}'")
+        for page, count in pages:
+            print(f"  page {page}: {count} entries")
         return
     try:
         limit = int(argv[2]) if len(argv) == 3 else 40

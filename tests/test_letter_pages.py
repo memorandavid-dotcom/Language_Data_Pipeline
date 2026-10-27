@@ -45,3 +45,13 @@ def test_gloss_at_x_118_8_is_a_gloss_with_the_new_threshold():
     assert kind_of(118.8, PROFILE) == "gloss"
     assert kind_of(72.0, PROFILE) == "subheadword"
     assert kind_of(54.0, PROFILE) == "headword"
+    
+def test_combined_letter_heading_with_slash_is_accepted():
+    rows = [row("H/J", 208.0), row("jardín", 54.0), row("garden", 146.2), row("45", 209.6)]
+    body, found = split_footer(rows, PROFILE)
+    assert found is True
+    assert [r["text"] for r in body] == ["jardín", "garden"]
+
+
+def test_a_lone_slash_is_not_a_heading():
+    assert not is_letter_heading(row("/", 208.0), PROFILE)

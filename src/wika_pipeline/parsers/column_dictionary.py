@@ -62,7 +62,7 @@ def is_letter_heading(row, profile):
     max_chars = profile.get("letter_heading_max_chars", 3)
     return (
         0 < len(text) <= max_chars
-        and text.isalpha()
+        and text.replace("/", "").isalpha()
         and text.isupper()
         and row["x0"] >= min_x
     )
@@ -110,6 +110,17 @@ def check_page(kinds, footer_found, profile):
         return False, f"{unexpected_share:.0%} of lines are at unexpected positions"
     return True, ""
 
+def is_pronunciation_row(text):
+    text = text.strip()
+    return len(text) > 2 and text.startswith("/") and text.endswith("/")
+
+
+def needs_continuation(line_text, linkers=()):
+    text = line_text.rstrip()
+    if text.endswith(",") or text.count("(") > text.count(")"):
+        return True
+    words = text.split()
+    return len(words) >= 2 and words[-1] in linkers
 
 def has_unusual_capital(text):
     return any(text[i].isupper() and text[i - 1].islower() for i in range(1, len(text)))
@@ -145,6 +156,7 @@ def build_entry(item, document, profile, created_at):
         original_text="\n".join(item["lines"]),
         parent_headword=item["parent"],
         homograph_number=item["homograph"],
+        pronunciation_guide=item.get("pronunciation"),
         source_document_id=document["document_id"],
         source_file=document["source_file"],
         source_page=item["page"],
@@ -157,7 +169,7 @@ def build_entry(item, document, profile, created_at):
 
 
 def parse_pdf(pdf_path, profile, document, created_at):
-    entries = []
+    items = []
     skipped = []
     page_issues = []
     pages_total = 0
@@ -166,11 +178,13 @@ def parse_pdf(pdf_path, profile, document, created_at):
 
     def finish():
         if state["current"] is not None:
-            entries.append(build_entry(state["current"], document, profile, created_at))
+            items.append(state["current"])
             state["current"] = None
 
     first_page = profile.get("first_page")
     last_page = profile.get("last_page")
+    y_tolerance = profile.get("y_tolerance", 2.0)
+    linkers = tuple(profile.get("wrap_linkers") or ())
 
     for page_number, rows in iter_page_lines(pdf_path):
         pages_total += 1
@@ -197,14 +211,59 @@ def parse_pdf(pdf_path, profile, document, created_at):
 
         previous_head_y = None
         order_reported = False
+        previous_row_y = None
+        break_reported = False
+        page_start = len(items)
         for row, kind in zip(body, kinds):
+            if previous_row_y is not None and row["y0"] < previous_row_y - y_tolerance:
+                candidates = items[page_start:]
+                if state["current"] is not None:
+                    candidates = candidates + [state["current"]]
+                flagged_any = False
+                for item in candidates:
+                    inside_group = item["page"] == page_number and item["y"] >= row["y0"] - y_tolerance
+                    explained = "headword_continued" in item["flags"] or item.get("pronunciation") is not None
+                    if inside_group and not explained:
+                        if "reading_order_break" not in item["flags"]:
+                            item["flags"].append("reading_order_break")
+                        flagged_any = True
+                if flagged_any and not break_reported:
+                    page_issues.append(
+                        {
+                            "page": page_number,
+                            "issue": "reading order break: a line sits higher on the page than the line before it",
+                        }
+                    )
+                    break_reported = True
+            previous_row_y = row["y0"]
             current = state["current"]
-            if kind in ("headword", "subheadword"):
+            if (
+                kind in ("headword", "subheadword")
+                and current is not None
+                and not current["glosses"]
+                and current["kind"] == kind
+                and current.get("pronunciation") is None
+                and is_pronunciation_row(row["text"])
+            ):
+                current["pronunciation"] = row["text"].strip()
+                current["lines"].append(row["text"])
+            elif (
+                kind in ("headword", "subheadword")
+                and current is not None
+                and not current["glosses"]
+                and current["kind"] == kind
+                and needs_continuation(current["lines"][-1], linkers)
+            ):
+                current["word"] = f"{current['word']} {split_homograph(row)[1]}"
+                current["lines"].append(row["text"])
+                if "headword_continued" not in current["flags"]:
+                    current["flags"].append("headword_continued")
+                if kind == "headword":
+                    state["last_main"] = current["word"]
+            elif kind in ("headword", "subheadword"):
                 finish()
                 flags = []
-                if previous_head_y is not None and row["y0"] < previous_head_y - profile.get(
-                    "y_tolerance", 2.0
-                ):
+                if previous_head_y is not None and row["y0"] < previous_head_y - y_tolerance:
                     flags.append("order_check_failed")
                     if not order_reported:
                         page_issues.append(
@@ -228,6 +287,8 @@ def parse_pdf(pdf_path, profile, document, created_at):
                     "page": page_number,
                     "index": index,
                     "parent": parent,
+                    "kind": kind,
+                    "y": row["y0"],
                     "glosses": [],
                     "lines": [row["text"]],
                     "flags": flags,
@@ -249,6 +310,7 @@ def parse_pdf(pdf_path, profile, document, created_at):
                 if "unexpected_indent" not in current["flags"]:
                     current["flags"].append("unexpected_indent")
     finish()
+    entries = [build_entry(item, document, profile, created_at) for item in items]
 
     flag_counts = Counter(flag for entry in entries for flag in entry["review_flags"])
     report = {
@@ -269,7 +331,6 @@ def parse_pdf(pdf_path, profile, document, created_at):
         "created_at": created_at,
     }
     return entries, report
-
 
 def write_outputs(entries, report, staging_dir):
     staging_dir = Path(staging_dir)

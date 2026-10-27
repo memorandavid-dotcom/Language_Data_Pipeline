@@ -1,5 +1,5 @@
 profile_id: pangasinan_dictionary
-profile_version: "0.2.0"
+profile_version: "0.6.0"
 running_title: PANGASINAN DICTIONARY
 running_titles: ["PANGASINAN-ENGLISH DICTIONARY"]
 main_headword_x: 54.0
@@ -11,3 +11,4 @@ min_gloss_share: 0.35
 min_headword_share: 0.1
 max_unexpected_share: 0.1
 last_page: 142
+wrap_linkers: [na, de, ya, a]

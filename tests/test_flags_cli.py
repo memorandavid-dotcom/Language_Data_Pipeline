@@ -1,4 +1,4 @@
-from wika_pipeline.flags_cli import count_flags, entries_with_flag, find_duplicates, format_line
+from wika_pipeline.flags_cli import count_flags, entries_with_flag, find_duplicates, format_line, pages_with_flag
 
 
 def entry(word, meaning="m", page=1, flags=None, homograph=None, pos=None):
@@ -36,3 +36,20 @@ def test_format_line_shows_page_homograph_and_truncates():
 
 def test_format_line_marks_missing_meaning():
     assert "(none)" in format_line(entry("a", None))
+    
+
+def test_same_word_under_different_parents_is_not_a_duplicate():
+    main_entry = entry("limamplo", "fifty", page=83)
+    sub_entry = dict(entry("limamplo", "fifty", page=110), parent_headword="polo")
+    assert find_duplicates([main_entry, sub_entry]) == []
+
+
+
+def test_pages_with_flag_counts_entries_per_page():
+    entries = [
+        entry("a", page=63, flags=["suspect_page_layout"]),
+        entry("b", page=63, flags=["suspect_page_layout"]),
+        entry("c", page=5, flags=["suspect_page_layout"]),
+        entry("d", page=7),
+    ]
+    assert pages_with_flag(entries, "suspect_page_layout") == [(5, 1), (63, 2)]    

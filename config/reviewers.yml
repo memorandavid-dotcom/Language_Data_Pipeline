@@ -1,0 +1,4 @@
+reviewers:
+  rev_example_pag:
+    languages: [pag]
+    active: true

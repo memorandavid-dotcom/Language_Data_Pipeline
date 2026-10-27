@@ -1,4 +1,5 @@
 import json
+import re
 import uuid
 from collections import Counter
 from pathlib import Path
@@ -109,6 +110,15 @@ def check_page(kinds, footer_found, profile):
     if unexpected_share > profile["max_unexpected_share"]:
         return False, f"{unexpected_share:.0%} of lines are at unexpected positions"
     return True, ""
+
+RUN_IN_PATTERN = re.compile(r"^(?P<word>\S.*?)\s+(?P<pron>/[^/\s][^/]*/)\s*(?P<rest>.*)$")
+
+
+def split_run_in(text):
+    match = RUN_IN_PATTERN.match(text.strip())
+    if match is None:
+        return None
+    return match.group("word"), match.group("pron"), match.group("rest").strip()
 
 def is_pronunciation_row(text):
     text = text.strip()
@@ -222,7 +232,7 @@ def parse_pdf(pdf_path, profile, document, created_at):
                 flagged_any = False
                 for item in candidates:
                     inside_group = item["page"] == page_number and item["y"] >= row["y0"] - y_tolerance
-                    explained = "headword_continued" in item["flags"] or item.get("pronunciation") is not None
+                    explained = "headword_continued" in item["flags"] or item.get("pronunciation_row", False)
                     if inside_group and not explained:
                         if "reading_order_break" not in item["flags"]:
                             item["flags"].append("reading_order_break")
@@ -246,6 +256,7 @@ def parse_pdf(pdf_path, profile, document, created_at):
                 and is_pronunciation_row(row["text"])
             ):
                 current["pronunciation"] = row["text"].strip()
+                current["pronunciation_row"] = True
                 current["lines"].append(row["text"])
             elif (
                 kind in ("headword", "subheadword")
@@ -271,16 +282,24 @@ def parse_pdf(pdf_path, profile, document, created_at):
                         )
                         order_reported = True
                 previous_head_y = row["y0"]
+                homograph, word = split_homograph(row)
+                pronunciation = None
+                glosses = []
+                run_in = split_run_in(word)
+                if run_in is not None:
+                    word, pronunciation, rest = run_in
+                    if rest:
+                        glosses.append(rest)
+                        flags.append("run_in_gloss")
                 parent = None
                 if kind == "subheadword":
                     parent = state["last_main"]
                     if parent is None:
                         flags.append("subentry_without_parent")
                 else:
-                    state["last_main"] = split_homograph(row)[1]
+                    state["last_main"] = word
                 index = per_page_index[page_number]
                 per_page_index[page_number] += 1
-                homograph, word = split_homograph(row)
                 state["current"] = {
                     "word": word,
                     "homograph": homograph,
@@ -289,7 +308,8 @@ def parse_pdf(pdf_path, profile, document, created_at):
                     "parent": parent,
                     "kind": kind,
                     "y": row["y0"],
-                    "glosses": [],
+                    "pronunciation": pronunciation,
+                    "glosses": glosses,
                     "lines": [row["text"]],
                     "flags": flags,
                 }

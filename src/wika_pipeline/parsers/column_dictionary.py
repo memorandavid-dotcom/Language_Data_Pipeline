@@ -50,9 +50,22 @@ def split_footer(rows, profile):
         has_title = any(normalize_title(text) in titles for text in last_two)
         has_number = any(text.isdigit() for text in last_two)
         if has_title and has_number:
-            return rows[:-2], True
+                    return rows[:-2], True
+    if len(rows) >= 3 and is_letter_heading(rows[0], profile) and rows[-1]["text"].strip().isdigit():
+        return rows[1:-1], True
     return rows, False
 
+
+def is_letter_heading(row, profile):
+    text = row["text"].strip()
+    min_x = profile.get("letter_heading_min_x", 150.0)
+    max_chars = profile.get("letter_heading_max_chars", 3)
+    return (
+        0 < len(text) <= max_chars
+        and text.isalpha()
+        and text.isupper()
+        and row["x0"] >= min_x
+    )
 
 def split_homograph(row):
     spans = row.get("spans") or []

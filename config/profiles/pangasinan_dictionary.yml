@@ -5,7 +5,7 @@ running_titles: ["PANGASINAN-ENGLISH DICTIONARY"]
 main_headword_x: 54.0
 subentry_indent: 18.0
 x_tolerance: 3.0
-gloss_min_x: 120.0
+gloss_min_x: 100.0
 y_tolerance: 2.0
 min_gloss_share: 0.35
 min_headword_share: 0.1

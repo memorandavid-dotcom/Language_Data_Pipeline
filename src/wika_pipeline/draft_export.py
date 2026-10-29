@@ -4,7 +4,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-from wika_pipeline.export import find_document, jsonl_bytes, load_export_format, sample_row, sha256_bytes
+from wika_pipeline.export import find_document, jsonl_bytes, load_manifest, load_export_format, sample_row, sha256_bytes
 from wika_pipeline.io_utils import load_jsonl
 
 EXCLUDED_STATUSES = {"rejected", "needs_correction"}
@@ -27,8 +27,7 @@ def draft_export(entries_path, manifest_path, format_path, drafts_dir, now=None)
         raise ValueError(f"{entries_path}: expected one document, found {sorted(map(str, document_ids))}")
     document_id = next(iter(document_ids))
 
-    with open(manifest_path, encoding="utf-8") as f:
-        document = find_document(json.load(f), document_id)
+    document = find_document(load_manifest(manifest_path), document_id)
     if document is None:
         raise ValueError(f"{document_id} is not in the intake manifest")
     if document.get("license_status") != "cleared" or not document.get("origin") or not document.get("owner"):

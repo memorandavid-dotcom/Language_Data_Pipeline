@@ -1,0 +1,16 @@
+sources:
+  war:
+    language_code: war
+    language_name: Waray
+    wiktionary_languages: ["Waray-Waray", "Waray"]
+    categories: ["Category:Waray-Waray_lemmas"]
+  cbk:
+    language_code: cbk
+    language_name: Chavacano
+    wiktionary_languages: ["Chavacano", "Zamboanga Chavacano", "Chabacano"]
+    categories: ["Category:Chavacano_lemmas", "Category:Zamboanga_Chavacano_lemmas"]
+license:
+  license_status: cleared
+  license_name: "CC BY-SA 4.0"
+  origin: "English Wiktionary (en.wiktionary.org), definitions retrieved through its public REST API; text licensed CC BY-SA 4.0"
+  owner: "Wiktionary contributors (authorship in each page's history); licensed CC BY-SA 4.0"

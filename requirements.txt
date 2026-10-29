@@ -3,3 +3,4 @@ pytest
 pydantic
 pyyaml
 openpyxl
+certifi

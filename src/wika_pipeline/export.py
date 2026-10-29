@@ -54,6 +54,17 @@ def compare_format(sample_rows, fields):
     }
 
 
+def load_manifest(paths):
+    if isinstance(paths, (str, Path)):
+        paths = [paths]
+    documents = []
+    for path in paths:
+        if Path(path).exists():
+            with open(path, encoding="utf-8") as f:
+                documents += json.load(f)
+    return documents
+
+
 def find_document(manifest, document_id):
     for document in manifest:
         if document.get("document_id") == document_id:
@@ -162,8 +173,7 @@ def export_document(reviewed_path, manifest_path, audit_path, format_path, expor
         raise ValueError(f"{reviewed_path}: expected one document, found {sorted(map(str, document_ids))}")
     document_id = next(iter(document_ids))
 
-    with open(manifest_path, encoding="utf-8") as f:
-        manifest = json.load(f)
+    manifest = load_manifest(manifest_path)
     document = find_document(manifest, document_id)
     audit_events = load_jsonl(audit_path) if Path(audit_path).exists() else []
     fields = load_export_format(format_path)

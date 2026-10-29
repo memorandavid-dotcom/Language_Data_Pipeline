@@ -19,3 +19,10 @@ __pycache__/
 *.pdf
 *.jsonl
 data/**/*.json
+data/exports/
+data/exports_draft/
+data/raw_web/
+*.xlsx
+/lapinig.json
+/waray_cat.json
+/chavacano_cat.json

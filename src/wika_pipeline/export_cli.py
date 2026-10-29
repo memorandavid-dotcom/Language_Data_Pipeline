@@ -5,7 +5,7 @@ from wika_pipeline.draft_export import draft_export
 from wika_pipeline.export import GateFailure, compare_format, export_document, load_export_format
 from wika_pipeline.io_utils import load_jsonl
 
-MANIFEST = Path("data") / "interim" / "document_manifest.json"
+MANIFEST = [Path("data") / "interim" / "document_manifest.json", Path("data") / "interim" / "web_manifest.json"]
 AUDIT = Path("data") / "review" / "audit_log.jsonl"
 FORMAT = Path("config") / "export_format.yml"
 EXPORTS = Path("data") / "exports"

@@ -39,7 +39,7 @@ def apply_command(argv):
     if len(paths) != 1:
         raise SystemExit(usage)
     workbook = Path(paths[0])
-    document_id = workbook.name.removesuffix(".review.xlsx")
+    document_id = workbook.name.removesuffix(".review.xlsx").split(".")[0]
     staging = DEFAULT_STAGING_DIR / f"{document_id}.entries.jsonl"
     try:
         summary = run_apply(workbook, staging, DEFAULT_REVIEWERS, DEFAULT_REVIEW_DIR, dry_run=dry_run)

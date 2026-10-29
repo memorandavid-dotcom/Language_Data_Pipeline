@@ -224,7 +224,7 @@ def run_apply(workbook_path, staging_path, reviewers_path, review_dir, dry_run=F
     suffix = ".review.xlsx"
     if not name.endswith(suffix):
         raise ValueError(f"{name}: expected a file named DOC_ID{suffix}")
-    document_id = name[: -len(suffix)]
+    document_id = name[: -len(suffix)].split(".")[0]
 
     reviewed_path = workbook_path.parent / f"{document_id}.reviewed.jsonl"
     base_path = reviewed_path if reviewed_path.exists() else Path(staging_path)

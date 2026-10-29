@@ -1,0 +1,15 @@
+fields:
+  - entry_id
+  - word
+  - dialect_code
+  - dialect_name
+  - part_of_speech
+  - speech_register
+  - meaning
+  - etymology
+  - phonetic
+  - synonyms
+  - tags
+  - hyphenation
+  - canonical_form
+  - validation_review_status

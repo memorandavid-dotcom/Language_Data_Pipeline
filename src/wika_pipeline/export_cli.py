@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+from wika_pipeline.draft_export import draft_export
 from wika_pipeline.export import GateFailure, compare_format, export_document, load_export_format
 from wika_pipeline.io_utils import load_jsonl
 
@@ -8,11 +9,13 @@ MANIFEST = Path("data") / "interim" / "document_manifest.json"
 AUDIT = Path("data") / "review" / "audit_log.jsonl"
 FORMAT = Path("config") / "export_format.yml"
 EXPORTS = Path("data") / "exports"
+DRAFTS = Path("data") / "exports_draft"
 
 USAGE = (
     "Usage:\n"
     "  python -m wika_pipeline.export_cli check data\\review\\LANG\\DOC_ID.reviewed.jsonl\n"
     "  python -m wika_pipeline.export_cli export data\\review\\LANG\\DOC_ID.reviewed.jsonl\n"
+    "  python -m wika_pipeline.export_cli draft data\\review\\LANG\\DOC_ID.reviewed.jsonl (or data\\staging\\DOC_ID.entries.jsonl)\n"
     "  python -m wika_pipeline.export_cli check-format samples\\SOMETHING.jsonl"
 )
 
@@ -36,12 +39,19 @@ def check_format_command(path):
 def main(argv):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    if len(argv) != 2 or argv[0] not in ("check", "export", "check-format"):
+    if len(argv) != 2 or argv[0] not in ("check", "export", "check-format", "draft"):
         raise SystemExit(USAGE)
     command, path = argv
     try:
         if command == "check-format":
             check_format_command(path)
+            return
+        if command == "draft":
+            result = draft_export(path, MANIFEST, FORMAT, DRAFTS)
+            print("DRAFT written. It is NOT validated data." if not result["already_exported"] else "Identical draft already exists.")
+            print(f"  {result['path']}")
+            print(f"  entries: {result['entries']}  approved: {result['approved']}  flagged: {result['flagged_for_review']}  not yet reviewed: {result['not_yet_reviewed']}")
+            print(f"  left out: {result['left_out_by_status'] or 'none'}")
             return
         result = export_document(path, MANIFEST, AUDIT, FORMAT, EXPORTS, check_only=(command == "check"))
     except GateFailure as failure:
